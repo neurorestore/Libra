@@ -1,0 +1,40 @@
+Package: Libra
+Title: Differential expression utilizing biological replicates in single-cell data
+Version: 1.0.0
+Authors@R: c(
+  person("Michael", "Skinnider", email = "michael.skinnider@msl.ubc.ca",
+         role = "aut"),
+  person("Jordan", "Squair", email = "jordansquair@gmail.com",
+         role = c("aut", "cre", "led")))
+BugReports: https://github.com/neurorestore/Libra/issues
+Description: Libra is an R package to identify differentially expressed genes in single-cell data, accounting for biological replicates.
+Depends: R (>= 3.6.0)
+Imports:
+	dplyr (>= 0.8.0),
+	purrr (>= 0.3.2),
+	tibble (>= 2.1.3),
+	magrittr (>= 1.5),
+	tester (>= 0.1.7),
+	Matrix (>= 1.2-14),
+	pbmcapply (>= 1.5.0),
+	lmtest (>= 0.9-37),
+	tidyselect (>= 0.2.5),
+	DESeq2 (>= 0.4.0),
+	Seurat (>= 3.1.5),
+	blme (>= 1.0-4),
+	edgeR (>= 3.28.1),
+	glmmTMB (>= 1.0.2.1),
+	limma (>= 3.1-3),
+	lme4 (>= 1.1-25),
+	lmerTest (>= 3.1-3),
+	matrixStats (>= 0.57.0),
+	forcats (>= 0.5.0),
+	methods,
+	stats,
+	Rdpack (>= 0.7)
+Suggests: knitr, monocle3, SingleCellExperiment, SummarizedExperiment
+VignetteBuilder: knitr
+License: GPL-3 + file LICENSE
+Encoding: UTF-8
+RdMacros: Rdpack
+RoxygenNote: 7.1.1
