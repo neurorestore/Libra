@@ -210,12 +210,12 @@ However, this can be adjusted using the `de_method` argument:
 Running this example on a MacBook should be instantaneous.
 However, analyzing >20 real single-cell RNA-seq datasets, we found Libra takes a median of ~5 minutes.
 In general, runtime scales close to linearly with the number of cell _types_ and _cells_.
-If using mixed models, by default, Libra runs on four cores, with each gene analyzed on a different core.
+If using _mixed models_, by default, Libra runs on four cores, with each gene analyzed on a different core.
 To change the number of cores, use the `n_threads` argument.
 For example, running Libra on eight threads:
 
 ```r
-> DE = run_de(hagai_toy, n_threads = 8)
+> DE = run_de(hagai_toy, de_family = 'mixedmodel', de_method = 'linear', de_type = 'LRT', n_threads = 8)
 ```
 
 ... will run about twice as fast.

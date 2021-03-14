@@ -134,7 +134,8 @@ direction of the logFC can be controlled using factor levels of \code{label_col}
 whereby a positive logFC reflects higher expression in the first level of
 the factor, compared to the second.
 \item{"p_val"}: The p-value resulting from the null hypothesis test.
-\item{"p_val_val"}: The false discovery rate
+\item{"p_val_adj"}: The adjusted p-value according to the Benjamini 
+Hochberg method (FDR).
 \item{"de_family"}: The differential expression method family.
 \item{"de_method"}: The precise differential expression method.
 \item{"de_type"}: The differential expression method statistical testing type.
