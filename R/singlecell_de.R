@@ -54,8 +54,14 @@ singlecell_de = function(
   meta = inputs$meta
   
   # define labels, reverse to avoid logFC conflicts
-  label1 = unique(meta$label)[2]
-  label2 = unique(meta$label)[1]
+  labels = unique(meta$label)
+  if (is.factor(labels)) {
+    label1 = levels(labels)[2]
+    label2 = levels(labels)[1]
+  } else {
+    label1 = labels[2]
+    label2 = labels[1]
+  }
   
   # get cell types
   cell_types = unique(meta$cell_type)

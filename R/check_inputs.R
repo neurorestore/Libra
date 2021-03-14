@@ -42,7 +42,11 @@ check_inputs = function(input,
       droplevels()
     if (!is.null(replicate_col))
       replicates = as.character(meta[[replicate_col]])
-    labels = as.character(meta[[label_col]])
+    if (!is.factor(meta[[label_col]])) {
+      labels = meta[[label_col]]
+    } else {
+      labels = as.character(meta[[label_col]])  
+    }
     cell_types = as.character(meta[[cell_type_col]])
     expr = Seurat::GetAssayData(input, slot = 'counts')
   } else if ("cell_data_set" %in% class(input)) {
@@ -56,7 +60,11 @@ check_inputs = function(input,
       as.data.frame()
     if (!is.null(replicate_col))
       replicates = as.character(meta[[replicate_col]])
-    labels = as.character(meta[[label_col]])
+    if (!is.factor(meta[[label_col]])) {
+      labels = meta[[label_col]]
+    } else {
+      labels = as.character(meta[[label_col]])  
+    }
     cell_types = as.character(meta[[cell_type_col]])
     expr = monocle3::exprs(input)
   } else if ("SingleCellExperiment" %in% class(input)){
@@ -71,7 +79,11 @@ check_inputs = function(input,
       as.data.frame()
     if (!is.null(replicate_col))
       replicates = as.character(meta[[replicate_col]])
-    labels = as.character(meta[[label_col]])
+    if (!is.factor(meta[[label_col]])) {
+      labels = meta[[label_col]]
+    } else {
+      labels = as.character(meta[[label_col]])  
+    }
     cell_types = as.character(meta[[cell_type_col]])
     expr = SummarizedExperiment::assay(input)
   } else {

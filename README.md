@@ -209,7 +209,7 @@ However, this can be adjusted using the `de_method` argument:
 
 Running this example on a MacBook should be instantaneous.
 However, analyzing >20 real single-cell RNA-seq datasets, we found Libra takes a median of ~5 minutes.
-In general, runtime scales close to linearly with the number of cell _types_ and _cells_
+In general, runtime scales close to linearly with the number of cell _types_ and _cells_.
 If using mixed models, by default, Libra runs on four cores, with each gene analyzed on a different core.
 To change the number of cores, use the `n_threads` argument.
 For example, running Libra on eight threads:
@@ -221,7 +221,7 @@ For example, running Libra on eight threads:
 ... will run about twice as fast.
 
 ## Calculating delta variance
-We recently showed that statistical methods for differential expression must account for the intrinsic variability of biological replicates to generate biologically accurate results in single-cell data (Squair et al., 2021, Biorxiv; link). Within the same experimental condition, replicates exhibit inherent differences in gene expression, which reflect both biological and technical factors. We reasoned that failing to account for these differences could lead methods to misattribute the inherent variability between replicates to the effect of the perturbation. To study this possibility, we compare the variance in the expression of each gene in pseudobulks and pseudo-replicates. We call this measure 'delta variance'. Users can use the calculation of delta variance to inform their differential expression results. For example, genes identified as differentially expressed by methods that do not account for biological replicate (i.e., 'singlecell' methods) that have a high delta variance should be treated with caution as they are likely to be false positives. Delta variance can be calculated as follows:
+We recently showed that statistical methods for differential expression must account for the intrinsic variability of biological replicates to generate biologically accurate results in single-cell data (Squair et al., 2021, Biorxiv; https://www.biorxiv.org/content/10.1101/2021.03.12.435024v1). Within the same experimental condition, replicates exhibit inherent differences in gene expression, which reflect both biological and technical factors. We reasoned that failing to account for these differences could lead methods to misattribute the inherent variability between replicates to the effect of the perturbation. To study this possibility, we compare the variance in the expression of each gene in pseudobulks and pseudo-replicates. We call this measure 'delta variance'. Users can use the calculation of delta variance to inform their differential expression results. For example, genes identified as differentially expressed by methods that do not account for biological replicate (i.e., 'singlecell' methods) that have a high delta variance should be treated with caution as they are likely to be false positives. Delta variance can be calculated as follows:
 
 ```r
 > DV = calculate_delta_variance(hagai_toy)

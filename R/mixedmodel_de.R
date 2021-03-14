@@ -222,8 +222,8 @@ mixedmodel_de = function(
       }
       cells1 = WhichCells(sc0, idents = levels[1])
       cells2 = WhichCells(sc0, idents = levels[2])
-      data1 = log(rowMeans(mat[, cells1, drop = F] + 1))
-      data2 = log(rowMeans(mat[, cells2, drop = F] + 1))
+      data1 = log(rowMeans(expm1(mat[, cells1, drop = F]) + 1))
+      data2 = log(rowMeans(expm1(mat[, cells2, drop = F]) + 1))
       out = as.numeric(data2 - data1)
     }, error = function(e) { return(NA_real_) })
     # format the results properly

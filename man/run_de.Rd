@@ -15,7 +15,8 @@ run_de(
   min_features = 0,
   de_family = "pseudobulk",
   de_method = "edgeR",
-  de_type = "LRT"
+  de_type = "LRT",
+  n_threads = 2
 )
 }
 \arguments{
@@ -113,6 +114,8 @@ option will default to \code{wilcox} for \code{singlecell} methods, to
 \code{edgeR} for \code{pseudobulk} methods, and \code{negbinom} for 
 \code{mixedmodel} methods.}
 
+\item{n_threads}{number of threads to use for parallelization in mixed models.}
+
 \item{de_test}{the specific mixed model test to use. Please see the 
 documentation under \code{de_family} for precise usage options,
 or see the documentation at https://github.com/neurorestore/Libra. This
@@ -126,7 +129,10 @@ following columns:
 \item{"cell type"}: The cell type DE tests were run on. By default Libra
 will run DE on all cell types present in the original meta data.
 \item{"gene"}: The gene being tested.
-\item{"avg_logFC"}: The average log fold change between conditions.
+\item{"avg_logFC"}: The average log fold change between conditions. The 
+direction of the logFC can be controlled using factor levels of \code{label_col}
+whereby a positive logFC reflects higher expression in the first level of
+the factor, compared to the second.
 \item{"p_val"}: The p-value resulting from the null hypothesis test.
 \item{"p_val_val"}: The false discovery rate
 \item{"de_family"}: The differential expression method family.

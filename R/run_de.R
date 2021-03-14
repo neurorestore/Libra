@@ -97,6 +97,7 @@
 #' or see the documentation at https://github.com/neurorestore/Libra. This
 #' option defaults to \code{NULL} for \code{singlecell} methods, to \code{LRT}
 #' for \code{pseudobulk} and \code{mixedmodel} methods. 
+#' @param n_threads number of threads to use for parallelization in mixed models.
 #' 
 #' @return a data frame containing differential expression results with the 
 #' following columns:
@@ -104,7 +105,10 @@
 #' \item{"cell type"}: The cell type DE tests were run on. By default Libra
 #' will run DE on all cell types present in the original meta data.
 #' \item{"gene"}: The gene being tested.
-#' \item{"avg_logFC"}: The average log fold change between conditions.
+#' \item{"avg_logFC"}: The average log fold change between conditions. The 
+#' direction of the logFC can be controlled using factor levels of \code{label_col}
+#' whereby a positive logFC reflects higher expression in the first level of
+#' the factor, compared to the second.
 #' \item{"p_val"}: The p-value resulting from the null hypothesis test.
 #' \item{"p_val_val"}: The false discovery rate
 #' \item{"de_family"}: The differential expression method family.
@@ -127,7 +131,8 @@ run_de = function(input,
                   min_features = 0,
                   de_family = 'pseudobulk',
                   de_method = 'edgeR',
-                  de_type = 'LRT') {
+                  de_type = 'LRT',
+                  n_threads = 2) {
   # run differential expression
   DE = switch(de_family,
               pseudobulk = pseudobulk_de(
@@ -152,7 +157,8 @@ run_de = function(input,
                 min_features = min_features,
                 de_family = 'mixedmodel',
                 de_method = de_method,
-                de_type = de_type
+                de_type = de_type,
+                n_threads = n_threads
               ),
               singlecell = singlecell_de(
                 input = input, 
@@ -187,6 +193,8 @@ run_de = function(input,
     mutate(p_val_adj = p.adjust(p_val, method = 'BH')) %>%
     # make sure gene is a character not a factor
     mutate(gene = as.character(gene)) %>%
+    # invert logFC to match Seurat level coding
+    mutate(avg_logFC = avg_logFC * -1) %>%
     dplyr::select(cell_type, 
                   gene, 
                   avg_logFC, 
