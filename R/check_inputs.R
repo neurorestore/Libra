@@ -23,14 +23,16 @@
 #' @return a cleaned up expression matrix and meta data object
 #'
 #' @importFrom dplyr %>% rename_ n_distinct mutate_at vars
+#' @importFrom magrittr %<>%
 #' @importFrom tester is_numeric_matrix is_numeric_dataframe
 #' @importFrom methods is
 #'
 check_inputs = function(input,
-                        meta = NULL,
+                        meta = meta,
                         replicate_col = 'replicate',
                         cell_type_col = 'cell_type',
                         label_col = 'label') {
+
   # extract cell types and label from metadata
   if ("Seurat" %in% class(input)) {
     # confirm Seurat is installed
@@ -102,7 +104,7 @@ check_inputs = function(input,
     labels = as.character(meta[[label_col]])
     cell_types = as.character(meta[[cell_type_col]])
   }
-
+  
   # check dimensions are non-zero
   if (length(dim(expr)) != 2 || !all(dim(expr) > 0)) {
     stop("expression matrix has at least one dimension of size zero")
@@ -142,17 +144,17 @@ check_inputs = function(input,
   if (any(missing)) {
     stop("matrix contains ", sum(missing), "missing values")
   }
-
+  
   # clean up the meta data
   if (!is.null(replicate_col)) {
-    meta %<>%
+    meta %<>% as.data.frame() %>%
       mutate(cell_barcode = rownames(meta),
              replicate = meta[[replicate_col]],
              cell_type = meta[[cell_type_col]],
              label = meta[[label_col]]) %>%
       mutate_at(vars(replicate, cell_type, label), as.factor)
   } else {
-    meta %<>%
+    meta %<>% as.data.frame() %>%
       mutate(cell_barcode = rownames(meta),
              cell_type = meta[[cell_type_col]],
              label = meta[[label_col]]) %>%

@@ -134,6 +134,17 @@ run_de = function(input,
                   de_method = 'edgeR',
                   de_type = 'LRT',
                   n_threads = 2) {
+  
+  # first, make sure inputs are correct
+  inputs = check_inputs(
+    input = input,
+    meta = meta,
+    replicate_col = replicate_col,
+    cell_type_col = cell_type_col,
+    label_col = label_col)
+  input = inputs$expr
+  meta = inputs$meta
+  
   # run differential expression
   DE = switch(de_family,
               pseudobulk = pseudobulk_de(

@@ -55,16 +55,6 @@ pseudobulk_de = function(input,
       de_type = 'trend'  
     }
   }
-
-  # first, make sure inputs are correct
-  inputs = check_inputs(
-    input = input,
-    meta = meta,
-    replicate_col = replicate_col,
-    cell_type_col = cell_type_col,
-    label_col = label_col)
-  expr = inputs$expr
-  meta = inputs$meta
   
   # get the pseudobulks list
   pseudobulks = to_pseudobulk(
@@ -75,10 +65,10 @@ pseudobulk_de = function(input,
     label_col = label_col,
     min_cells = min_cells,
     min_reps = min_reps,
-    min_features = min_features
+    min_features = min_features,
+    external = F
   )
   
-  #TODO: wrap this in map
   results = map(pseudobulks, function(x) {
     # create targets matrix
     targets = data.frame(group_sample = colnames(x)) %>%

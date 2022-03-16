@@ -37,17 +37,20 @@ to_pseudobulk = function(input,
                          label_col = 'label',
                          min_cells = 3,
                          min_reps = 2,
-                         min_features = 0) {
-  # first, make sure inputs are correct
-  inputs = Libra:::check_inputs(
-    input, 
-    meta = meta,
-    replicate_col = replicate_col,
-    cell_type_col = cell_type_col,
-    label_col = label_col)
-  expr = inputs$expr
-  meta = inputs$meta
-  
+                         min_features = 0,
+                         external = T) {
+  if (external) {
+    # first, make sure inputs are correct
+    inputs = Libra:::check_inputs(
+      input, 
+      meta = meta,
+      replicate_col = replicate_col,
+      cell_type_col = cell_type_col,
+      label_col = label_col)
+    expr = inputs$expr
+    meta = inputs$meta
+  }
+
   # convert to characters
   meta %<>% mutate(replicate = as.character(replicate),
                    cell_type = as.character(cell_type),
