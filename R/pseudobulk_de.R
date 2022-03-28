@@ -50,7 +50,7 @@ pseudobulk_de = function(input,
                          de_type = 'LRT') {
   # check args
   if (de_method == 'limma') {
-    if (!is.null(de_type)) {
+    if (is.null(de_type)) {
       # change default type to use
       de_type = 'trend'  
     }
@@ -58,7 +58,7 @@ pseudobulk_de = function(input,
   
   # get the pseudobulks list
   pseudobulks = to_pseudobulk(
-    input = expr,
+    input = input,
     meta = meta,
     replicate_col = replicate_col,
     cell_type_col = cell_type_col,

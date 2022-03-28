@@ -49,6 +49,8 @@ to_pseudobulk = function(input,
       label_col = label_col)
     expr = inputs$expr
     meta = inputs$meta
+  } else {
+    expr = input
   }
 
   # convert to characters
@@ -70,7 +72,7 @@ to_pseudobulk = function(input,
       print(.)
       cell_type = .
       meta0 = meta %>% filter(cell_type == !!cell_type)
-      expr0 = expr %>% extract(, meta0$cell_barcode)
+      expr0 = expr %>% magrittr::extract(, meta0$cell_barcode)
       # catch cell types without replicates or conditions
       if (n_distinct(meta0$label) < 2)
         return(NA)
@@ -90,17 +92,17 @@ to_pseudobulk = function(input,
       colnames(mat_mm) = gsub("replicate|label", "", colnames(mat_mm))
       # drop empty columns
       keep_samples = colSums(mat_mm) > 0
-      mat_mm %<>% extract(, keep_samples)
+      mat_mm %<>% magrittr::extract(, keep_samples)
       return(mat_mm)
     }) %>%
     setNames(keep)
   
   # drop NAs
-  pseudobulks %<>% extract(!is.na(.))
+  pseudobulks %<>% magrittr::extract(!is.na(.))
   
   # also filter out cell types with no retained genes
   min_dim = map(pseudobulks, as.data.frame) %>% map(nrow)
-  pseudobulks %<>% extract(min_dim > 1)
+  pseudobulks %<>% magrittr::extract(min_dim > 1)
   
   # also filter out types without replicates
   min_repl = map_int(pseudobulks, ~ {
@@ -112,6 +114,6 @@ to_pseudobulk = function(input,
       return(as.integer(0))
     min(table(targets$group))
   })
-  pseudobulks %<>% extract(min_repl >= min_reps)
+  pseudobulks %<>% magrittr::extract(min_repl >= min_reps)
   return(pseudobulks)
 }
