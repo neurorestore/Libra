@@ -50,7 +50,7 @@ pseudobulk_de = function(input,
                          de_type = 'LRT') {
   # check args
   if (de_method == 'limma') {
-    if (is.null(de_type)) {
+    if (de_type != 'voom') {
       # change default type to use
       de_type = 'trend'  
     }
