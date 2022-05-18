@@ -115,9 +115,10 @@ calculate_delta_variance = function(input,
       var1 = rowVars(norm1)
       var2 = rowVars(norm2)
       
-      # return the delta variance
+      # return the delta variance with the gene information
       delta = var2 - var1
-      return(delta)
+      out = data.frame(gene = rownames(mat_mm), DV = delta)
+      return(out)
     }) %>%
     setNames(keep)
 }
