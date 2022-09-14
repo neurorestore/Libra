@@ -17,8 +17,8 @@
 #'   Defaults to \code{3}.
 #' @param min_reps the minimum number of replicates in a cell type to retain it.
 #'   Defaults to \code{2}.
-#' @param min_features the minimum number of counts for a gene to retain it.
-#'   Defaults to \code{0}   
+#' @param min_features the minimum number of expressing cells (or replicates) 
+#'   for a gene to retain it. Defaults to \code{0}.
 #' @param de_method the specific differential expression testing method to use.
 #'   Defaults to edgeR.
 #' @param de_type the specific parameter of the differential expression testing

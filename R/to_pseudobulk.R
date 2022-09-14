@@ -18,8 +18,8 @@
 #'   Defaults to \code{3}.
 #' @param min_reps the minimum number of replicates in a cell type to retain it.
 #'   Defaults to \code{2}.
-#' @param min_features the minimum number of counts for a gene to retain it.
-#'   Defaults to \code{0}   
+#' @param min_features the minimum number of expressing cells (or replicates) 
+#'   for a gene to retain it. Defaults to \code{0}.
 #' @return a list of pseudobulk matrices, for each cell type.
 #'  
 #' @importFrom magrittr %<>% extract
@@ -86,7 +86,7 @@ to_pseudobulk = function(input,
       # process data into gene X replicate X cell_type matrice
       mm = model.matrix(~ 0 + replicate:label, data = meta0)
       mat_mm = expr0 %*% mm
-      keep_genes = rowSums(mat_mm > 0) > min_features
+      keep_genes = rowSums(mat_mm > 0) >= min_features
       mat_mm = mat_mm[keep_genes, ] %>% as.data.frame()
       mat_mm %<>% as.data.frame()
       colnames(mat_mm) = gsub("replicate|label", "", colnames(mat_mm))

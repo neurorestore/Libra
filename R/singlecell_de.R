@@ -14,8 +14,8 @@
 #'   label. Defaults to \code{label}. 
 #' @param min_cells the minimum number of cells in a cell type to retain it.
 #'   Defaults to \code{3}.
-#' @param min_features the minimum number of counts for a gene to retain it.
-#'   Defaults to \code{0}   
+#' @param min_features the minimum number of expressing cells (or replicates) 
+#'   for a gene to retain it. Defaults to \code{0}.   
 #' @param de_method the mixed model type to use. Defaults to wilcox.
 #' @return a data frame containing differential expression results.
 #'  
@@ -99,7 +99,7 @@ singlecell_de = function(
         Idents(sc) = sc$cell_type
         sub = sc %>% subset(idents = cell_type)
         # drop genes below threshold
-        keep = rowSums(sub) > min_features
+        keep = rowSums(sub) >= min_features
         sub = sub[keep,]
         # run DE analysis
         res = FindMarkers(sub, ident.1 = label1, ident.2 = label2,
