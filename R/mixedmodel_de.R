@@ -139,7 +139,7 @@ mixedmodel_de = function(
     genes = rownames(expr0)
     result = apply_fun(genes, mc.cores = n_threads, function(x) {
       test_dat = data.frame(
-        GENE = expr[x,],
+        GENE = expr0[x,],
         label = meta0$label,
         replicate = meta0$replicate
       )
