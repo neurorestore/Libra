@@ -237,7 +237,7 @@ mixedmodel_de = function(
              mutate(p_val_adj = p.adjust(p_val, method = 'BH'),
                     cell_type = !!cell_type,
                     logFC = logFC,
-                    de_family = 'pseudobulk',
+                    de_family = 'mixedmodel',
                     de_method = de_tag,
                     de_type = de_type))
   }
