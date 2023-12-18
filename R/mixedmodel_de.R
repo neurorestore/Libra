@@ -96,13 +96,13 @@ mixedmodel_de = function(
   if (use_offset == F) {
     fmla = as.formula(paste(fmla, "+", "(1|replicate)"))
     message("..using formula: ",
-            paste0("GENE ~ ", paste(label_col, latent_vars, collapse = "+")),
+            paste0("GENE ~ ", paste('label', latent_vars, collapse = "+")),
             " with random term (1|replicate)"
     )
   } else if (use_offset == T) {
     fmla = as.formula(paste(fmla, "+ offset(log(total_counts)) +", "(1|replicate)"))
     message("..using formula: ",
-            paste0("GENE ~ ", paste(label_col, latent_vars, collapse = "+")),
+            paste0("GENE ~ ", paste('label', latent_vars, collapse = "+")),
             "with a total counts correction term offset(log(total_counts)) and",
             " with random term (1|replicate)"
     )
