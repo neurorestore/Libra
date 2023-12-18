@@ -78,7 +78,7 @@ mixedmodel_de = function(
   # define the formula to use
   fmla <- paste(
     "GENE ~",
-    paste(label_col, latent_vars, collapse = "+")
+    paste('label', latent_vars, collapse = "+")
   )
   
   if (grepl("offset", de_method)) {
