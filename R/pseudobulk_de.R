@@ -23,6 +23,7 @@
 #'   Defaults to edgeR.
 #' @param de_type the specific parameter of the differential expression testing
 #'   method. Defaults to LRT for edgeR, LRT for DESeq2, and trend for limma.
+#' @param input_type refers to either scRNA or scATAC
 #' @return a data frame containing differential expression results.
 #'  
 #' @importFrom magrittr %<>%
@@ -47,7 +48,8 @@ pseudobulk_de = function(input,
                          min_features = 0,
                          de_family = 'pseudobulk',
                          de_method = 'edgeR',
-                         de_type = 'LRT') {
+                         de_type = 'LRT',
+                         input_type = 'scRNA') {
   # check args
   if (de_method == 'limma') {
     if (de_type != 'voom') {
@@ -184,4 +186,12 @@ pseudobulk_de = function(input,
     )
   })
   results %<>% bind_rows(.id = 'cell_type')
+  if (input_type == 'scATAC') {
+    results %<>%
+      dplyr::rename(
+        da_family = de_family,
+        da_method = de_method,
+        da_type = de_type
+      )
+  }
 }

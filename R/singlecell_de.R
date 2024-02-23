@@ -16,7 +16,10 @@
 #'   Defaults to \code{3}.
 #' @param min_features the minimum number of expressing cells (or replicates) 
 #'   for a gene to retain it. Defaults to \code{0}.   
+#' @param normalization normalization for Seurat methods
+#' @param latent_vars latent variables for Seurat methods
 #' @param de_method the mixed model type to use. Defaults to wilcox.
+#' @param input_type refers to either scRNA or scATAC
 #' @return a data frame containing differential expression results.
 #'  
 #' @importFrom magrittr extract set_rownames %<>%
@@ -33,14 +36,22 @@ singlecell_de = function(
   label_col = 'label',
   de_method = 'wilcox',
   min_cells = 3,
-  min_features = 0
+  min_features = 0,
+  normalization = 'log_tp10k',
+  latent_vars = NULL,
+  input_type = 'scRNA'
 ) {
-  
-  # check the arguments
-  if (!de_method %in% c("wilcox", "bimod", "t", "negbinom", "poisson", "LR",
-                        "MAST"))
-    stop("Please select one of: wilcox, bimod, t, negbinom, poissoin, LR,
-         or MAST as the de_method")
+
+  if (input_type == 'scRNA') {
+    # check the arguments
+    if (!de_method %in% c("wilcox", "bimod", "t", "negbinom", "poisson", "LR", "MAST"))
+      stop("Please select one of: wilcox, bimod, t, negbinom, poissoin, LR,
+           or MAST as the de_method")  
+  } else if (input_type == 'scATAC') {
+    if (!de_method %in% c("wilcox", "t", "negbinom", "LR", "fisher", "binomial", "LR_peaks", "permutation"))
+      stop("Please select one of: wilcox, bimod, t, negbinom, poissoin, LR,
+           or MAST as the de_method")
+  }
   
   # first, make sure inputs are correct
   inputs = check_inputs(
@@ -76,7 +87,34 @@ singlecell_de = function(
   # check if integer or already normalized, normalize if needed
   mat = GetAssayData(sc, slot = 'counts')
   if ((sum(mat %% 1 == 0) == length(mat)) == T) {
-    sc %<>% NormalizeData()
+    if (normalization == 'log_tp10k'){
+      sc %<>% NormalizeData()
+    } else if (normalization == 'tp10k'){
+      sc %<>% NormalizeData(normalization.method='RC')
+    } else if (normalization == 'log_tp_median'){
+      median_cpc = median(colSums(mat))
+      sc %<>% NormalizeData(scale.factor = median_cpc)
+    } else if (normalization == 'tp_median'){
+      median_cpc = median(colSums(mat))
+      sc %<>% NormalizeData(normalization.method='RC', scale.factor = median_cpc)
+    } else if (normalization == 'TFIDF'){
+      
+      # extracted from Signac https://github.com/stuart-lab/signac/blob/2ad6c3c9c0c8dd31f7e1433b2efd5050d8606f27/R/preprocessing.R#L621
+      npeaks = Matrix::colSums(mat)
+      tf = Matrix::tcrossprod(x = mat, y = Diagonal(x = 1 / npeaks))
+      rsums = rowSums(mat)
+      idf = ncol(mat)/rsums
+      idf = log(1+idf) # since precomputed idf = FALSE (by default)
+      norm_mat = Diagonal(length(idf), idf) %*% tf
+      slot(object = norm_mat, name = "x") = log1p(slot(object = norm_mat, name = "x") * 1e4)
+      colnames(norm_mat) = colnames(mat)
+      rownames(norm_mat) = rownames(mat)
+      vals = slot(object = norm_mat, name = "x")
+      vals[is.na(x = vals)] = 0
+      slot(object = norm_mat, name = "x") = vals
+      
+      sc[['RNA']]@data = norm_mat
+    }
   } else {
     sc[['RNA']]@data = mat
   }
@@ -101,26 +139,43 @@ singlecell_de = function(
         # drop genes below threshold
         keep = rowSums(sub) >= min_features
         sub = sub[keep,]
-        # run DE analysis
-        res = FindMarkers(sub, ident.1 = label1, ident.2 = label2,
-                              assay = 'RNA', min.pct = -Inf, 
-                              min.cells.feature = 0,
-                              min.cells.group = min_cells, 
-                              logfc.threshold = -Inf,
-                              group.by = 'label', 
-                              subset.ident = cell_type,
-                              test.use = de_method) %>%
-          rownames_to_column('gene') %>%
-          mutate(
-            cell_type = cell_type,
-            de_family = 'singlecell',
-            de_method = de_method,
-            de_type = 'singlecell'
-            )
+        # seurat-based methods
+        if (!method %in% c("fisher", "binomial", "LR_peaks", "permutation", "snapatac")){
+          # run DE analysis
+          res = FindMarkers(sub, ident.1 = label1, ident.2 = label2,
+                                assay = 'RNA', min.pct = -Inf, 
+                                min.cells.feature = 0,
+                                min.cells.group = min_cells, 
+                                logfc.threshold = -Inf,
+                                group.by = 'label', 
+                                subset.ident = cell_type,
+                                test.use = de_method,
+                                latent.vars = latent_vars
+                                ) %>%
+            rownames_to_column('gene') %>%
+            mutate(
+              cell_type = cell_type,
+              de_family = 'singlecell',
+              de_method = de_method,
+              de_type = 'singlecell'
+              )
+        } else {
+          meta = sub@meta.data
+          mat = GetAssayData(mat)
+          res = da_function_wrapper(mat, meta, method, cell_type)
+        }
         DE[[cell_type]] = res
       }, error = function(e) message(e))
     }
   }
   DE %<>% bind_rows()
+  if (input_type == 'scATAC') {
+    DE %<>%
+      dplyr::rename(
+        da_family = de_family,
+        da_method = de_method,
+        da_type = de_type
+      )
+  }
   return(DE)
 }

@@ -37,7 +37,7 @@ check_inputs = function(input,
   if ("Seurat" %in% class(input)) {
     # confirm Seurat is installed
     if (!requireNamespace("Seurat", quietly = TRUE)) {
-      stop("install \"Seurat\" R package for Augur compatibility with ",
+      stop("install \"Seurat\" R package for Libra compatibility with ",
            "input Seurat object", call. = FALSE)
     }
     meta = input@meta.data %>%
@@ -54,7 +54,7 @@ check_inputs = function(input,
   } else if ("cell_data_set" %in% class(input)) {
     # confirm monocle3 is installed
     if (!requireNamespace("monocle3", quietly = TRUE)) {
-      stop("install \"monocle3\" R package for Augur compatibility with ",
+      stop("install \"monocle3\" R package for Libra compatibility with ",
            "input monocle3 object", call. = FALSE)
     }
     meta = monocle3::pData(input) %>%
@@ -72,7 +72,7 @@ check_inputs = function(input,
   } else if ("SingleCellExperiment" %in% class(input)){
     # confirm SingleCellExperiment is installed
     if (!requireNamespace("SingleCellExperiment", quietly = TRUE)) {
-      stop("install \"SingleCellExperiment\" R package for Augur ",
+      stop("install \"SingleCellExperiment\" R package for Libra ",
            "compatibility with input SingleCellExperiment object",
            call. = FALSE)
     }
@@ -88,6 +88,57 @@ check_inputs = function(input,
     }
     cell_types = as.character(meta[[cell_type_col]])
     expr = SummarizedExperiment::assay(input)
+  } else if ("Signac" %in% class(input)){
+    # confirm Signac is installed
+    if (!requireNamespace("Signac", quietly = TRUE)) {
+      stop("install \"Signac\" R package for Libra compatibility with ",
+           "input Signac object", call. = FALSE)
+    }
+    meta = input@meta.data %>%
+      droplevels()
+    if (!is.null(replicate_col))
+      replicates = as.character(meta[[replicate_col]])
+    if (!is.factor(meta[[label_col]])) {
+      labels = meta[[label_col]]
+    } else {
+      labels = as.character(meta[[label_col]])
+    }
+    cell_types = as.character(meta[[cell_type_col]])
+    expr = Signac::GetAssayData(input, slot = 'peaks')
+  } else if ("ArchR" %in% class(input)){
+    # confirm ArchR is installed
+    if (!requireNamespace("ArchR", quietly = TRUE)) {
+      stop("install \"ArchR\" R package for Libra compatibility with ",
+           "input ArchR object", call. = FALSE)
+    }
+    meta = data.frame(getCellColData(input)) %>%
+      droplevels()
+    if (!is.null(replicate_col))
+      replicates = as.character(meta[[replicate_col]])
+    if (!is.factor(meta[[label_col]])) {
+      labels = meta[[label_col]]
+    } else {
+      labels = as.character(meta[[label_col]])
+    }
+    cell_types = as.character(meta[[cell_type_col]])
+    expr = getMatrixFromProject(input, useMatrix='PeakMatrix')
+  } else if ("snap" %in% class(input)){
+    # confirm ArchR is installed
+    if (!requireNamespace("SnapATAC", quietly = TRUE)) {
+      stop("install \"SnapATAC\" R package for Libra compatibility with ",
+           "input SnapATAC object", call. = FALSE)
+    }
+    meta = data.frame(input@meta.data) %>%
+      droplevels()
+    if (!is.null(replicate_col))
+      replicates = as.character(meta[[replicate_col]])
+    if (!is.factor(meta[[label_col]])) {
+      labels = meta[[label_col]]
+    } else {
+      labels = as.character(meta[[label_col]])
+    }
+    cell_types = as.character(meta[[cell_type_col]])
+    expr = input@pmat
   } else {
     # check if input is sparse matrix or numberic matrix/df
     valid_input = is(input, 'sparseMatrix') ||

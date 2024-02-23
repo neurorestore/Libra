@@ -179,6 +179,14 @@ run_de = function(input,
                 label_col = label_col,
                 min_features = min_features,
                 de_method = de_method
+              ),
+              snapatac = singlecell_de(
+                input = input,
+                meta = meta,
+                cell_type_col = cell_type_col,
+                label_col = label_col,
+                min_features = min_features,
+                de_method = de_method
               )
   )
 

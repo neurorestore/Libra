@@ -31,7 +31,9 @@ Imports:
 	forcats (>= 0.5.0),
 	methods,
 	stats,
-	Rdpack (>= 0.7)
+	Rdpack (>= 0.7),
+	lmtest,
+	parallel
 Suggests: knitr, monocle3, SingleCellExperiment, SummarizedExperiment
 VignetteBuilder: knitr
 License: GPL-3 + file LICENSE
