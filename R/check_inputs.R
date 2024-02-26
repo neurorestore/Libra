@@ -196,22 +196,30 @@ check_inputs = function(input,
     stop("matrix contains ", sum(missing), "missing values")
   }
   
-  # clean up the meta data
+  ## clean up the meta data
   if (!is.null(replicate_col)) {
     meta %<>% as.data.frame() %>%
       mutate(cell_barcode = rownames(meta),
              replicate = meta[[replicate_col]],
              cell_type = meta[[cell_type_col]],
-             label = meta[[label_col]]) %>%
-      mutate_at(vars(replicate, cell_type, label), as.factor)
+             label = meta[[label_col]])
   } else {
     meta %<>% as.data.frame() %>%
       mutate(cell_barcode = rownames(meta),
              cell_type = meta[[cell_type_col]],
-             label = meta[[label_col]]) %>%
-      mutate_at(vars(cell_type, label), as.factor)
+             label = meta[[label_col]])
   }
-
+  # keep factors if present in meta
+  if (!is.factor(meta$label)) {
+    meta$label = as.factor(meta$label)
+  }
+  if (!is.factor(meta$replicate)) {
+    meta$label = as.factor(meta$replicate)
+  }
+  if (!is.factor(meta$cell_type)) {
+    meta$label = as.factor(meta$cell_type)
+  }
+  
   # make sure meta contains row names and is a data frame
   rownames(meta) = colnames(expr)
   meta = as.data.frame(meta)
