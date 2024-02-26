@@ -48,8 +48,7 @@ pseudobulk_de = function(input,
                          min_features = 0,
                          de_family = 'pseudobulk',
                          de_method = 'edgeR',
-                         de_type = 'LRT',
-                         input_type = 'scRNA') {
+                         de_type = 'LRT') {
   # check args
   if (de_method == 'limma') {
     if (de_type != 'voom') {
@@ -186,12 +185,4 @@ pseudobulk_de = function(input,
     )
   })
   results %<>% bind_rows(.id = 'cell_type')
-  if (input_type == 'scATAC') {
-    results %<>%
-      dplyr::rename(
-        da_family = de_family,
-        da_method = de_method,
-        da_type = de_type
-      )
-  }
 }

@@ -11,7 +11,11 @@ singlecell_de(
   label_col = "label",
   de_method = "wilcox",
   min_cells = 3,
-  min_features = 0
+  min_features = 0,
+  normalization = "log_tp10k",
+  binarization = FALSE,
+  latent_vars = NULL,
+  input_type = "scRNA"
 )
 }
 \arguments{
@@ -33,8 +37,16 @@ label. Defaults to \code{label}.}
 \item{min_cells}{the minimum number of cells in a cell type to retain it.
 Defaults to \code{3}.}
 
-\item{min_features}{the minimum number of counts for a gene to retain it.
-Defaults to \code{0}}
+\item{min_features}{the minimum number of expressing cells (or replicates) 
+for a gene to retain it. Defaults to \code{0}.}
+
+\item{normalization}{normalization for Seurat/Signac methods}
+
+\item{binarization}{binarization for single-cell ATAC-seq only}
+
+\item{latent_vars}{latent variables for Seurat/Signac methods}
+
+\item{input_type}{refers to either scRNA or scATAC}
 }
 \value{
 a data frame containing differential expression results.

@@ -199,7 +199,7 @@ da_function_wrapper = function(mat, meta, da_method, cell_type_name) {
       left_join(logFC_df) %>%
       select(cell_type, gene, avg_logFC, test_statistic, p_val, p_val_adj, de_family, de_method, de_type)
 
-  } else if (da_method == 'snapatac'){
+  } else if (da_method == 'snapatac_findDAR'){
     temp_res = get_snapatac_exact_pval(mat, compar1_barcodes, compar2_barcodes)
     temp_res$gene = rownames(temp_res)
     temp_res$p_val_adj = p.adjust(temp_res$PValue, method='BH')
@@ -208,9 +208,9 @@ da_function_wrapper = function(mat, meta, da_method, cell_type_name) {
       as_tibble() %>%
       mutate(
         cell_type = cell_type_name,
-        de_family = 'snapatac',
+        de_family = 'snapatac_findDAR',
         de_method = da_method,
-        de_type = 'snapatac'
+        de_type = 'snapatac_findDAR'
       ) %>% 
       dplyr::rename(p_val = PValue) %>%
       dplyr::rename(avg_logFC = logFC) %>%

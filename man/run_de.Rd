@@ -16,21 +16,25 @@ run_de(
   de_family = "pseudobulk",
   de_method = "edgeR",
   de_type = "LRT",
+  input_type = "scRNA",
+  normalization = "log_tp10k",
+  binarization = FALSE,
+  latent_vars = NULL,
   n_threads = 2
 )
 }
 \arguments{
 \item{input}{a single-cell matrix to be converted, with features (genes) in rows
-and cells in columns. Alternatively, a \code{Seurat}, \code{monocle3}, or 
+and cells in columns. Alternatively, a \code{Seurat}, \code{monocle3}, or
 or \code{SingleCellExperiment} object can be directly input.}
 
 \item{meta}{the accompanying meta data whereby the rownames match the column
 names of \code{input}.}
 
-\item{replicate_col}{the vector in \code{meta} containing the replicate 
+\item{replicate_col}{the vector in \code{meta} containing the replicate
 information. Defaults to \code{replicate}.}
 
-\item{cell_type_col}{the vector in \code{meta} containing the cell type 
+\item{cell_type_col}{the vector in \code{meta} containing the cell type
 information. Defaults to \code{cell_type}.}
 
 \item{label_col}{the vector in \code{meta} containing the experimental
@@ -42,17 +46,15 @@ Defaults to \code{3}.}
 \item{min_reps}{the minimum number of replicates in a cell type to retain it.
 Defaults to \code{2}.}
 
-\item{min_features}{the minimum number of counts for a gene to retain it.
-Defaults to \code{0}}
+\item{min_features}{the minimum number of expressing cells (or replicates) 
+for a gene to retain it. Defaults to \code{0}.}
 
-\item{de_family}{the differential expression family to use. Available options
+\item{de_family}{the differential expression/accessibility family to use. Available options
 are:
 \itemize{
-\item{"singlecell"}: Uses traditionally methods implemented by Seurat to 
-test for differentially expressed genes. These methods do not take biological
-replicate into account. For single cell methods there are \code{six} options
-for \code{de_method} that can be used, while no input for 
-\code{de_test} is required:
+\item{"singlecell"}: For single cell differential expression (DE) methods, uses traditionally methods implemented by Seurat to
+test for DE genes. These methods do not take biological replicate into account. There are \code{six} options
+for \code{de_method} that can be used, while no input for \code{de_test} is required:
 \itemize{
 \item{"wilcox"}: Wilcoxon Rank-Sum test. The default.
 \item{"bimod"}: Likelihood ratio test
@@ -61,11 +63,24 @@ for \code{de_method} that can be used, while no input for
 \item{"LR"}: Logistic regression
 \item{"MAST"}: MAST (requires installation of the \code{MAST} package).
 }
+For single cell differential accessibility (DA) methods, uses methods implemented by Signac and custom-implemented methods to
+test for DA regions. These methods do not take biological replicate into account. There are \code{eight} options
+for \code{de_method} that can be used, while no input for \code{de_test} is required:
+\itemize{
+\item{"wilcox"}: Wilcoxon Rank-Sum test. The default.
+\item{"t"}: Student's t-test
+\item{"negbinom"}: Negative binomial linear model
+\item{"LR"}: Logistic regression
+\item{"fisher"}: Fisher exact test
+\item{"binomial"}: Binomial test
+\item{"LR_peaks"}: Logistic regression by peaks
+\item{"permutation"}: Permutation testing
+}
 
-\item{"pseudobulk"}: These methods first convert the single-cell expression
-matrix to a so-called 'pseudobulk' matrix by summing counts for each gene
-within biological replicates, and then performing differential expression 
-using bulk RNA-seq methods. For pseudobulk methods there are \code{six} 
+\item{"pseudobulk"}: These methods first convert the single-cell expression/ single-cell peak
+matrix to a so-called 'pseudobulk' matrix by summing counts for each gene/peaks
+within biological replicates, and then performing differential expression/differential accessbility
+using bulk RNA-seq methods. For pseudobulk methods there are \code{six}
 different methods that can be accessed by combinations of \code{de_method}
 and \code{de_type}. First specify \code{de_method} as one of the following:
 \itemize{
@@ -74,7 +89,7 @@ Robinson et al, Bioinformatics, 2010. For this method please specify
 \code{de_type} as either \code{"LRT"} or \code{"QLF"} as the null hypothesis
 testing approach. See http://www.bioconductor.org/packages/release/bioc/html/edgeR.html
 for further information. The default.
-\item{"DESeq2"}: The DESeq2 method according to 
+\item{"DESeq2"}: The DESeq2 method according to
 Love et al, Genome Biology, 2014. For this method please specify
 \code{de_type} as either \code{"LRT"} or \code{"Wald"} as the null hypothesis
 testing approach. See https://bioconductor.org/packages/release/bioc/html/DESeq2.html
@@ -83,70 +98,85 @@ for further information.
 Ritchie et al, Nucleic Acids Research, 2015. For this method please specify
 \code{de_type} as either \code{"voom"} or \code{"trend"} as the precise
 normalization and null hypothesis testing approach within limma. See
-https://bioconductor.org/packages/release/bioc/html/limma.html for 
+https://bioconductor.org/packages/release/bioc/html/limma.html for
 further information.
 }
 \item{"mixedmodel"}: Mixed model methods also take biological replicate into
 account by modelling it as a random effect. Please note that these methods
-are generally extremely computationally intensive. For mixed model methods 
-there are \code{ten} different methods that can be accessed by 
-combinations of \code{de_method} and \code{de_type}. 
+are generally extremely computationally intensive. For mixed model methods
+there are \code{ten} different methods that can be accessed by
+combinations of \code{de_method} and \code{de_type}.
 First specify \code{de_method} as one of the following:
 \itemize{
-\item{"negbinom"}: Negative binomial generalized linear mixed model. 
+\item{"negbinom"}: Negative binomial generalized linear mixed model.
 The default.
 \item{"linear"}: Linear mixed model.
 \item{"poisson"}: Poisson generalized linear mixed model.
 \item{"negbinom_offset"}: Negative binomial generalized linear mixed model
 with an offset term to account for sequencing depth differences between cells.
-\item{"poisson_offset"}: Poisson generalized linear mixed model with an 
+\item{"poisson_offset"}: Poisson generalized linear mixed model with an
 offset term to account for sequencing depth differences between cells.
 }
 For each of these options the user has the option to use either a Wald or
 Likelihood ratio testing method by setting \code{de_type} to \code{"Wald"}
 or \code{"LRT"}. Default is LRT.
+\item{"snapatac_findDAR"}: SnapATAC findDifferentialAccessibility method. Only for scATAC-seq.
 }}
 
 \item{de_method}{the specific differential expression testing method to use.
 Please see the documentation under \code{de_family} for precise usage options,
 or see the documentation at https://github.com/neurorestore/Libra. This
 option will default to \code{wilcox} for \code{singlecell} methods, to
-\code{edgeR} for \code{pseudobulk} methods, and \code{negbinom} for 
+\code{edgeR} for \code{pseudobulk} methods, and \code{negbinom} for
 \code{mixedmodel} methods.}
+
+\item{input_type}{refers to either scRNA or scATAC}
+
+\item{normalization}{normalization for single-cell based Seurat/Signac methods, options include
+#' \itemize{
+\item{"log_tp10k"}: Log TP10K (default)
+\item{"tp10k"}: TP10K
+\item{"log_tp_median"}: Log TP median
+\item{"tp_median"}: TP median
+\item{"TFIDF"}: Only for scATAC-seq
+}}
+
+\item{binarization}{binarization for single-cell ATAC-seq only}
+
+\item{latent_vars}{normalization for single-cell Seurat/Signac based methods.}
 
 \item{n_threads}{number of threads to use for parallelization in mixed models.}
 
-\item{de_test}{the specific mixed model test to use. Please see the 
+\item{de_test}{the specific mixed model test to use. Please see the
 documentation under \code{de_family} for precise usage options,
 or see the documentation at https://github.com/neurorestore/Libra. This
 option defaults to \code{NULL} for \code{singlecell} methods, to \code{LRT}
 for \code{pseudobulk} and \code{mixedmodel} methods.}
 }
 \value{
-a data frame containing differential expression results with the 
+a data frame containing differential expression results with the
 following columns:
 \itemize{
 \item{"cell type"}: The cell type DE tests were run on. By default Libra
 will run DE on all cell types present in the original meta data.
 \item{"gene"}: The gene being tested.
-\item{"avg_logFC"}: The average log fold change between conditions. The 
+\item{"avg_logFC"}: The average log fold change between conditions. The
 direction of the logFC can be controlled using factor levels of \code{label_col}
 whereby a positive logFC reflects higher expression in the first level of
 the factor, compared to the second.
 \item{"p_val"}: The p-value resulting from the null hypothesis test.
-\item{"p_val_adj"}: The adjusted p-value according to the Benjamini 
+\item{"p_val_adj"}: The adjusted p-value according to the Benjamini
 Hochberg method (FDR).
-\item{"de_family"}: The differential expression method family.
-\item{"de_method"}: The precise differential expression method.
-\item{"de_type"}: The differential expression method statistical testing type.
+\item{"de_family/da_family"}: The differential expression/accessibility method family.
+\item{"de_method/da_method"}: The precise differential/accessibility expression method.
+\item{"de_type/da_type"}: The differential expression/accessibility method statistical testing type.
 }
 }
 \description{
-Perform differential expression on single-cell data. Libra implements a total 
-of 22 unique differential expression methods that can all be accessed from 
-one function. These methods encompass traditional single-cell methods as well 
-as methods accounting for biological replicate including pseudobulk and 
-mixed model methods. The code for this package has been largely inspired 
-by the Seurat and Muscat packages. Please see the documentation of these 
+Perform differential expression/accessibility (DE/DA) on single-cell data. Libra implements unique DE/DA methods that can all be accessed from
+one function. These methods encompass traditional single-cell methods as well
+as methods accounting for biological replicate including pseudobulk and
+mixed model methods. The code for this package has been largely inspired
+by the Seurat and Muscat packages. Please see the documentation of these
 packages for further information.
 }

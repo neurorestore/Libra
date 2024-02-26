@@ -12,7 +12,8 @@ to_pseudobulk(
   label_col = "label",
   min_cells = 3,
   min_reps = 2,
-  min_features = 0
+  min_features = 0,
+  external = T
 )
 }
 \arguments{
@@ -38,8 +39,8 @@ Defaults to \code{3}.}
 \item{min_reps}{the minimum number of replicates in a cell type to retain it.
 Defaults to \code{2}.}
 
-\item{min_features}{the minimum number of counts for a gene to retain it.
-Defaults to \code{0}}
+\item{min_features}{the minimum number of expressing cells (or replicates) 
+for a gene to retain it. Defaults to \code{0}.}
 }
 \value{
 a list of pseudobulk matrices, for each cell type.

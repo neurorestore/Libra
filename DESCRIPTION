@@ -39,4 +39,4 @@ VignetteBuilder: knitr
 License: GPL-3 + file LICENSE
 Encoding: UTF-8
 RdMacros: Rdpack
-RoxygenNote: 7.1.1
+RoxygenNote: 7.2.2

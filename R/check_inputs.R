@@ -14,12 +14,6 @@
 #'   information. Defaults to \code{cell_type}.
 #' @param label_col the vector in \code{meta} containing the experimental
 #'   label. Defaults to \code{label}.
-#' @param min_cells the minimum number of cells in a cell type to retain it.
-#'   Defaults to \code{3}.
-#' @param min_reps the minimum number of replicates in a cell type to retain it.
-#'   Defaults to \code{2}.
-#' @param min_features the minimum number of expressing cells (or replicates) 
-#'   for a gene to retain it. Defaults to \code{0}.
 #' @return a cleaned up expression matrix and meta data object
 #'
 #' @importFrom dplyr %>% rename_ n_distinct mutate_at vars

@@ -6,7 +6,7 @@
 \usage{
 check_inputs(
   input,
-  meta = NULL,
+  meta = meta,
   replicate_col = "replicate",
   cell_type_col = "cell_type",
   label_col = "label"
@@ -14,29 +14,20 @@ check_inputs(
 }
 \arguments{
 \item{input}{a single-cell matrix to be converted, with features (genes) in rows
-and cells in columns. Alternatively, a \code{Seurat}, \code{monocole3}, or 
+and cells in columns. Alternatively, a \code{Seurat}, \code{monocole3}, or
 or \code{SingleCellExperiment} object can be directly input.}
 
 \item{meta}{the accompanying meta data whereby the rownames match the column
 names of \code{input}.}
 
-\item{replicate_col}{the vector in \code{meta} containing the replicate 
+\item{replicate_col}{the vector in \code{meta} containing the replicate
 information. Defaults to \code{replicate}.}
 
-\item{cell_type_col}{the vector in \code{meta} containing the cell type 
+\item{cell_type_col}{the vector in \code{meta} containing the cell type
 information. Defaults to \code{cell_type}.}
 
 \item{label_col}{the vector in \code{meta} containing the experimental
 label. Defaults to \code{label}.}
-
-\item{min_cells}{the minimum number of cells in a cell type to retain it.
-Defaults to \code{3}.}
-
-\item{min_reps}{the minimum number of replicates in a cell type to retain it.
-Defaults to \code{2}.}
-
-\item{min_features}{the minimum number of counts for a gene to retain it.
-Defaults to \code{0}}
 }
 \value{
 a cleaned up expression matrix and meta data object

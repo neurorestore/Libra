@@ -1,7 +1,6 @@
 #' Run differential expression
 #'
-#' Perform differential expression on single-cell data. Libra implements a total
-#' of 22 unique differential expression methods that can all be accessed from
+#' Perform differential expression/accessibility (DE/DA) on single-cell data. Libra implements unique DE/DA methods that can all be accessed from
 #' one function. These methods encompass traditional single-cell methods as well
 #' as methods accounting for biological replicate including pseudobulk and
 #' mixed model methods. The code for this package has been largely inspired
@@ -25,14 +24,12 @@
 #'   Defaults to \code{2}.
 #' @param min_features the minimum number of expressing cells (or replicates) 
 #'   for a gene to retain it. Defaults to \code{0}.   
-#' @param de_family the differential expression family to use. Available options
+#' @param de_family the differential expression/accessibility family to use. Available options
 #' are:
 #' \itemize{
-#' \item{"singlecell"}: Uses traditionally methods implemented by Seurat to
-#' test for differentially expressed genes. These methods do not take biological
-#' replicate into account. For single cell methods there are \code{six} options
-#' for \code{de_method} that can be used, while no input for
-#' \code{de_test} is required:
+#' \item{"singlecell"}: For single cell differential expression (DE) methods, uses traditionally methods implemented by Seurat to
+#' test for DE genes. These methods do not take biological replicate into account. There are \code{six} options
+#' for \code{de_method} that can be used, while no input for \code{de_test} is required:
 #' \itemize{
 #' \item{"wilcox"}: Wilcoxon Rank-Sum test. The default.
 #' \item{"bimod"}: Likelihood ratio test
@@ -41,10 +38,23 @@
 #' \item{"LR"}: Logistic regression
 #' \item{"MAST"}: MAST (requires installation of the \code{MAST} package).
 #' }
+#' For single cell differential accessibility (DA) methods, uses methods implemented by Signac and custom-implemented methods to
+#' test for DA regions. These methods do not take biological replicate into account. There are \code{eight} options
+#' for \code{de_method} that can be used, while no input for \code{de_test} is required:
+#' \itemize{
+#' \item{"wilcox"}: Wilcoxon Rank-Sum test. The default.
+#' \item{"t"}: Student's t-test
+#' \item{"negbinom"}: Negative binomial linear model
+#' \item{"LR"}: Logistic regression
+#' \item{"fisher"}: Fisher exact test
+#' \item{"binomial"}: Binomial test
+#' \item{"LR_peaks"}: Logistic regression by peaks
+#' \item{"permutation"}: Permutation testing
+#' }
 #'
-#' \item{"pseudobulk"}: These methods first convert the single-cell expression
-#' matrix to a so-called 'pseudobulk' matrix by summing counts for each gene
-#' within biological replicates, and then performing differential expression
+#' \item{"pseudobulk"}: These methods first convert the single-cell expression/ single-cell peak
+#' matrix to a so-called 'pseudobulk' matrix by summing counts for each gene/peaks
+#' within biological replicates, and then performing differential expression/differential accessbility
 #' using bulk RNA-seq methods. For pseudobulk methods there are \code{six}
 #' different methods that can be accessed by combinations of \code{de_method}
 #' and \code{de_type}. First specify \code{de_method} as one of the following:
@@ -85,6 +95,7 @@
 #' For each of these options the user has the option to use either a Wald or
 #' Likelihood ratio testing method by setting \code{de_type} to \code{"Wald"}
 #' or \code{"LRT"}. Default is LRT.
+#' \item{"snapatac_findDAR"}: SnapATAC findDifferentialAccessibility method. Only for scATAC-seq.
 #' }
 #' @param de_method the specific differential expression testing method to use.
 #' Please see the documentation under \code{de_family} for precise usage options,
@@ -97,6 +108,17 @@
 #' or see the documentation at https://github.com/neurorestore/Libra. This
 #' option defaults to \code{NULL} for \code{singlecell} methods, to \code{LRT}
 #' for \code{pseudobulk} and \code{mixedmodel} methods.
+#' @param input_type refers to either scRNA or scATAC
+#' @param normalization normalization for single-cell based Seurat/Signac methods, options include
+#' #' \itemize{
+#' \item{"log_tp10k"}: Log TP10K (default)
+#' \item{"tp10k"}: TP10K
+#' \item{"log_tp_median"}: Log TP median
+#' \item{"tp_median"}: TP median
+#' \item{"TFIDF"}: Only for scATAC-seq
+#' }
+#' @param binarization binarization for single-cell ATAC-seq only
+#' @param latent_vars normalization for single-cell Seurat/Signac based methods. 
 #' @param n_threads number of threads to use for parallelization in mixed models.
 #'
 #' @return a data frame containing differential expression results with the
@@ -112,9 +134,9 @@
 #' \item{"p_val"}: The p-value resulting from the null hypothesis test.
 #' \item{"p_val_adj"}: The adjusted p-value according to the Benjamini
 #' Hochberg method (FDR).
-#' \item{"de_family"}: The differential expression method family.
-#' \item{"de_method"}: The precise differential expression method.
-#' \item{"de_type"}: The differential expression method statistical testing type.
+#' \item{"de_family/da_family"}: The differential expression/accessibility method family.
+#' \item{"de_method/da_method"}: The precise differential/accessibility expression method.
+#' \item{"de_type/da_type"}: The differential expression/accessibility method statistical testing type.
 #' }
 #'
 #' @importFrom magrittr  %<>%
@@ -133,6 +155,10 @@ run_de = function(input,
                   de_family = 'pseudobulk',
                   de_method = 'edgeR',
                   de_type = 'LRT',
+                  input_type = 'scRNA',
+                  normalization = 'log_tp10k',
+                  binarization = FALSE,
+                  latent_vars = NULL,
                   n_threads = 2) {
   
   # first, make sure inputs are correct
@@ -141,7 +167,8 @@ run_de = function(input,
     meta = meta,
     replicate_col = replicate_col,
     cell_type_col = cell_type_col,
-    label_col = label_col)
+    label_col = label_col
+    )
   input = inputs$expr
   meta = inputs$meta
   
@@ -178,9 +205,13 @@ run_de = function(input,
                 cell_type_col = cell_type_col,
                 label_col = label_col,
                 min_features = min_features,
-                de_method = de_method
+                de_method = de_method,
+                normalization = normalization,
+                binarization = binarization,
+                latent_vars = latent_vars,
+                input_type = input_type
               ),
-              snapatac = singlecell_de(
+              snapatac_findDAR = snapatac_de(
                 input = input,
                 meta = meta,
                 cell_type_col = cell_type_col,
@@ -227,4 +258,13 @@ run_de = function(input,
     ) %>%
     ungroup() %>%
     arrange(cell_type, gene)
+  
+    if (input_type == 'scATAC') {
+      DE %<>%
+          dplyr::rename(
+              da_family = de_family,
+              da_method = de_method,
+              da_type = de_type
+          )
+    }
 }

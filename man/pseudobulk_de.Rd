@@ -41,14 +41,16 @@ Defaults to \code{3}.}
 \item{min_reps}{the minimum number of replicates in a cell type to retain it.
 Defaults to \code{2}.}
 
-\item{min_features}{the minimum number of counts for a gene to retain it.
-Defaults to \code{0}}
+\item{min_features}{the minimum number of expressing cells (or replicates) 
+for a gene to retain it. Defaults to \code{0}.}
 
 \item{de_method}{the specific differential expression testing method to use.
 Defaults to edgeR.}
 
 \item{de_type}{the specific parameter of the differential expression testing
 method. Defaults to LRT for edgeR, LRT for DESeq2, and trend for limma.}
+
+\item{input_type}{refers to either scRNA or scATAC}
 }
 \value{
 a data frame containing differential expression results.
