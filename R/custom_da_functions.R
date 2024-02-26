@@ -228,7 +228,7 @@ da_function_wrapper = function(mat, meta, da_method, cell_type_name) {
       left_join(logFC_df) %>%
       select(cell_type, gene, avg_logFC, test_statistic, p_val, p_val_adj, de_family, de_method, de_type)
   } else if (da_method == 'LR_peaks'){
-      temp_res = get_LR_peaks_pval(mat, compar1_barcodes, compar2_barcodes, features_check=FALSE)
+      temp_res = get_LR_peaks_pval(mat, compar1_barcodes, compar2_barcodes)
       temp_res %<>%
         as_tibble() %>%
         mutate(

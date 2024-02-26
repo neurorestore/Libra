@@ -27,7 +27,8 @@
 #' @param de_family the differential expression/accessibility family to use. Available options
 #' are:
 #' \itemize{
-#' \item{"singlecell"}: For single cell differential expression (DE) methods, uses traditionally methods implemented by Seurat to
+#' \item{"singlecell"}: 
+#' For single cell differential expression (DE) methods, uses traditionally methods implemented by Seurat to
 #' test for DE genes. These methods do not take biological replicate into account. There are \code{six} options
 #' for \code{de_method} that can be used, while no input for \code{de_test} is required:
 #' \itemize{
@@ -110,7 +111,7 @@
 #' for \code{pseudobulk} and \code{mixedmodel} methods.
 #' @param input_type refers to either scRNA or scATAC
 #' @param normalization normalization for single-cell based Seurat/Signac methods, options include
-#' #' \itemize{
+#' \itemize{
 #' \item{"log_tp10k"}: Log TP10K (default)
 #' \item{"tp10k"}: TP10K
 #' \item{"log_tp_median"}: Log TP median
@@ -118,7 +119,7 @@
 #' \item{"TFIDF"}: Only for scATAC-seq
 #' }
 #' @param binarization binarization for single-cell ATAC-seq only
-#' @param latent_vars normalization for single-cell Seurat/Signac based methods. 
+#' @param latent_vars latent variables for single-cell Seurat/Signac based methods. 
 #' @param n_threads number of threads to use for parallelization in mixed models.
 #'
 #' @return a data frame containing differential expression results with the
