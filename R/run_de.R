@@ -212,7 +212,7 @@ run_de = function(input,
                 latent_vars = latent_vars,
                 input_type = input_type
               ),
-              snapatac_findDAR = snapatac_de(
+              snapatac_findDAR = singlecell_de(
                 input = input,
                 meta = meta,
                 cell_type_col = cell_type_col,

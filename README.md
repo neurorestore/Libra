@@ -1,6 +1,6 @@
 # README
 
-Libra is an R package to perform differential expression on single-cell data. Libra implements a total of 22 unique differential expression methods that can all be accessed from one function. These methods encompass traditional single-cell methods as well as methods accounting for biological replicate including pseudobulk and mixed model methods. The code for this package has been largely inspired by the [Seurat](https://satijalab.org/seurat/) and [Muscat](https://github.com/HelenaLC/muscat) packages. Please see the documentation of these packages for further information.
+Libra is an R package to perform differential expression/accessibility on single-cell data. Libra implements unique differential expression/accessibility methods that can all be accessed from one function. These methods encompass traditional single-cell methods as well as methods accounting for biological replicate including pseudobulk and mixed model methods. The code for this package has been largely inspired by the [Seurat](https://satijalab.org/seurat/) and [Muscat](https://github.com/HelenaLC/muscat) packages. Please see the documentation of these packages for further information. To simplify the readme, differential expression (DE) and differential accessibility will be used interchangeably unless stated explicity.
 
 ## System requirements
 
@@ -30,9 +30,9 @@ Libra relies on functions from the following R packages:
 	Rdpack (>= 0.7)
 ```
 
-In addition, the [Seurat](https://satijalab.org/seurat/), [monocle3](https://cole-trapnell-lab.github.io/monocle3/), or [SingleCellExperiment](http://bioconductor.org/packages/release/bioc/html/SingleCellExperiment.html) packages must be installed for Libra to take Seurat, monocle, SingleCellExperiment objects as input, respectively. Methods that require additional packages may also require additional installs (e.g., MAST).
+In addition, for scRNA-seq data, the [Seurat](https://satijalab.org/seurat/), [monocle3](https://cole-trapnell-lab.github.io/monocle3/), or [SingleCellExperiment](http://bioconductor.org/packages/release/bioc/html/SingleCellExperiment.html) packages must be installed for Libra to take Seurat, monocle, SingleCellExperiment objects as input, respectively. For scATAC-seq data, the [Signac](https://stuartlab.org/signac/), [ArchR](https://www.archrproject.com/), or [snap](https://github.com/r3fang/SnapATAC) packages must be installed for Libra to take Signac, ArchR, snap objects as input, respectively. Methods that require additional packages may also require additional installs (e.g., MAST).
 
-Libra has been tested with R version 3.6.0 and higher.
+Libra has been tested with R version 4.2.0 and higher.
 
 ## Installation
 
@@ -68,15 +68,19 @@ This should take no more than a few minutes.
 The main function of Libra, `run_de`, takes as input a preprocessed features-by-cells (e.g., genes-by-cells for scRNA-seq) matrix, and a data frame containing metadata associated with each cell, minimally including the cell type annotations, replicates, and sample labels to be predicted.
 This means that in order to use Libra, you should have pre-processed your data (e.g., by read alignment and cell type assignment for scRNA-seq) across all experimental conditions.
 
-Libra provides a universal interface to perform differential expression using 22 discrete methods. These methods are summarized as follows:
+Libra provides a universal interface to perform differential expression/accessibility using the following methods:
 
-__Single cell methods__
-- Wilcoxon Rank-Sum test
-- Likelihood ratio test
-- Student's t-test
-- Negative binomial linear model
-- Logistic regression
-- MAST
+__Single cell methods (Differential expression - DE; differential accessbility - DA)__
+- Wilcoxon Rank-Sum test (DE/DA)
+- Likelihood ratio test (DE)
+- Student's t-test (DE/DA)
+- Negative binomial linear model (DE/DA)
+- Logistic regression (DE/DA)
+- MAST (DE)
+- Fisher exact test (DA)
+- Binomial test (DA)
+- Logistic regression based on peaks (DA)
+- Permutation test (DA)
 
 __Pseudobulk methods__
 - edgeR-LRT
@@ -98,6 +102,8 @@ __Mixed model methods__
 - Poisson generalized linear mixed model with offset
 - Poisson generalized linear mixed model with offset-LRT
 
+__SnapATAC findDAR method__
+
 By default Libra will use a pseudobulk approach, implementing the `edgeR` package with a likelihood ratio test (LRT) null hypothesis testing framework. Each of the 22 tests can be accessed through three key variables of the `run_de` function: `de_family`, `de_method`, and `de_type`. Their precise access arguments are summarized in the below table.
 
 | Method | de_family | de_method | de_type |
@@ -108,6 +114,10 @@ Student's t-test | singlecell | t | |
 Negative binomial linear model | singlecell | negbinom | |
 Logistic regression | singlecell | LR | |
 MAST | singlecell | MAST | |
+Fisher exact test | singlecell | fisher | |
+Binomial test | singlecell | binomial | |
+Logistic regression based on peaks | singlecell | LR_peaks | |
+Permutation test | singlecell | permutation | |
 edgeR-LRT | pseudobulk | edgeR | LRT
 edgeR-QLF | pseudobulk | edgeR | QLF
 DESeq2-LRT | pseudobulk | DESeq2 | LRT
@@ -124,6 +134,7 @@ Poisson generalized linear mixed model | mixedmodel | poisson | Wald
 Poisson generalized linear mixed model-LRT | mixedmodel | poisson | LRT
 Poisson generalized linear mixed model with offset | mixedmodel | poisson_offset | Wald
 Poisson generalized linear mixed model with offset-LRT | mixedmodel | poisson_offset | LRT
+SnapATAC findDAR | snapatac_findDAR | | |
 
 If batch effects are present in the data, these should be accounted for, e.g., using [Seurat](https://www.sciencedirect.com/science/article/pii/S0092867419305598) or [Harmony](https://www.nature.com/articles/s41592-019-0619-0), to avoid biasing differential expression by technical differences or batch effects.
 
@@ -146,13 +157,15 @@ If you would like to store the pseudobulk matrices in a variable, before running
 > matrices = to_pseudobulk(expr, meta = meta)
 ```
 
-Libra can also run directly on a Seurat object. For a Seurat object `sc`, with the `sc@meta.data` data frame containing `cell_type` and `label` columns, simply do:
+Libra can also run directly on a Seurat/Signac object. For a Seurat object `sc`, with the `sc@meta.data` data frame containing `cell_type` and `label` columns, simply do:
 
 ```r
 > DE = run_de(sc)
 ```
 
-The same code can be used if `sc` is a monocle3 or SingleCellExperiment object instead.
+**Please set the `input_type` to `scATAC` when running for differential accessibility, Libra assumes the input_type to be `scRNA` by default.**
+
+The same code can be used if `sc` is a monocle3, SingleCellExperiment, Signac, ArchR or snap object instead.
 
 ## Demonstration
 

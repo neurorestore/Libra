@@ -246,7 +246,7 @@ da_function_wrapper = function(mat, meta, da_method, cell_type_name) {
         mutate(
           cell_type = cell_type_name,
           de_family = 'singlecell',
-          de_method = 'permuation',
+          de_method = 'permutation',
           de_type = 'singlecell'
         ) %>% 
         left_join(logFC_df) %>%
