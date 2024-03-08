@@ -208,10 +208,10 @@ check_inputs = function(input,
     meta$label = as.factor(meta$label)
   }
   if (!is.factor(meta$replicate)) {
-    meta$label = as.factor(meta$replicate)
+    meta$replicate = as.factor(meta$replicate)
   }
   if (!is.factor(meta$cell_type)) {
-    meta$label = as.factor(meta$cell_type)
+    meta$cell_type = as.factor(meta$cell_type)
   }
   
   # make sure meta contains row names and is a data frame
