@@ -268,4 +268,5 @@ run_de = function(input,
               da_type = de_type
           )
     }
+    DE
 }
