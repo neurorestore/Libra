@@ -155,7 +155,7 @@ singlecell_de = function(
                 keep = rowSums(sub) >= min_features
                 sub = sub[keep,]
                 # seurat-based methods
-                if (!method %in% c("fisher", "binomial", "LR_peaks", "permutation", "snapatac")){
+                if (!de_method %in% c("fisher", "binomial", "LR_peaks", "permutation", "snapatac")){
                     # run DE analysis
                     res = FindMarkers(sub, ident.1 = label1, ident.2 = label2,
                                       assay = 'RNA', min.pct = -Inf, 
