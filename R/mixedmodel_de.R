@@ -131,6 +131,7 @@ mixedmodel_de = function(
   keep = rowSums(expr) >= min_features
   expr = expr[keep,]
   
+  out_df = data.frame()
   for (cell_type in cell_types) {
     # get the subset matrix
     meta0 = meta %>% filter(cell_type == !!cell_type)
@@ -230,7 +231,7 @@ mixedmodel_de = function(
     vec = unlist(result)
     p_val = vec[seq(1,length(vec),2)]
     test_statistic = vec[seq(2,length(vec),2)]
-    return(data.frame(p_val = p_val, 
+    out_df %<>% rbind(data.frame(p_val = p_val, 
                       test_statistic = test_statistic,
                       gene = rownames(expr)) %>%
              set_rownames(rownames(expr)) %>%
@@ -239,8 +240,10 @@ mixedmodel_de = function(
                     logFC = logFC,
                     de_family = 'mixedmodel',
                     de_method = de_tag,
-                    de_type = de_type))
+                    de_type = de_type)
+             )
   }
+  return (out_df)
 }
   
   
