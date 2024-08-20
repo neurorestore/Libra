@@ -167,6 +167,9 @@ check_inputs = function(input,
   if (n_distinct(labels) == 1) {
     stop("only one label provided: ", unique(labels))
   }
+  if (n_distinct(labels) > 2) {
+      stop("more than 2 labels provided: ", unique(labels))
+  }
 
   # check for missing labels or cell types
   if (any(is.na(labels))) {
