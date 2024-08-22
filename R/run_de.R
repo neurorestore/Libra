@@ -172,12 +172,12 @@ run_de = function(input,
     )
   input = inputs$expr
   meta = inputs$meta
-  sc = CreateSeuratObject(input, meta.data=meta)
   label_levels = levels(meta$label)
   label1_barcodes = meta %>% filter(label == label_levels[1]) %>% rownames(.)
   label2_barcodes = meta %>% filter(label == label_levels[2]) %>% rownames(.)
   label1_mean_expr = rowMeans(input[,label1_barcodes])
   label2_mean_expr = rowMeans(input[,label2_barcodes])
+  sc = CreateSeuratObject(input, meta.data=meta) %>% NormalizeData()
   out_stats = Seurat::FoldChange(sc, label1_barcodes, label2_barcodes, base=exp(1)) %>%
       mutate(gene = rownames(.)) %>%
       set_rownames(NULL) %>%
