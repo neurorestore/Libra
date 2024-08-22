@@ -141,7 +141,7 @@
 #' }
 #'
 #' @importFrom magrittr  %<>%
-#' @importFrom tidyverse left_join
+#' @importFrom dplyr left_join
 #' @importFrom forcats fct_recode
 #' @importFrom dplyr group_by mutate select ungroup arrange
 #' @export
