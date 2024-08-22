@@ -177,17 +177,17 @@ run_de = function(input,
   label2_barcodes = meta %>% filter(label == label_levels[2]) %>% rownames(.)
   label1_mean_expr = rowMeans(input[,label1_barcodes])
   label2_mean_expr = rowMeans(input[,label2_barcodes])
-  sc = CreateSeuratObject(input, meta.data=meta) %>% NormalizeData()
+  sc = CreateSeuratObject(input, meta.data=meta) %>% NormalizeData(verbose = F)
   out_stats = Seurat::FoldChange(sc, label1_barcodes, label2_barcodes, base=exp(1)) %>%
       mutate(gene = rownames(.)) %>%
       set_rownames(NULL) %>%
-      dplyr::select(gene, avg_logFC)
+      dplyr::select(gene, avg_logFC, pct.1, pct.2)
   mean_expr = data.frame(
       gene = names(label1_mean_expr),
       exp1 = label1_mean_expr,
       exp2 = label2_mean_expr
   )
-  out_stats %<>% dplyr::left_join(mean_expr)
+  out_stats %<>% dplyr::left_join(mean_expr, by='gene')
   
   # run differential expression
   DE = switch(de_family,
@@ -263,10 +263,12 @@ run_de = function(input,
     # make sure gene is a character not a factor
     mutate(gene = as.character(gene)) %>%
     dplyr::select(-avg_logFC) %>%
-    dplyr::left_join(out_stats) %>%
+    dplyr::left_join(out_stats, by = 'gene') %>%
     dplyr::select(cell_type,
                   gene,
                   avg_logFC,
+                  pct.1,
+                  pct.2,
                   exp1,
                   exp2,
                   p_val,
@@ -279,7 +281,9 @@ run_de = function(input,
     arrange(cell_type, gene) %>%
     dplyr::rename(
       !!paste0(label_levels[1], '.exp') := exp1,
-      !!paste0(label_levels[2], '.exp') := exp2
+      !!paste0(label_levels[2], '.exp') := exp2,
+      !!paste0(label_levels[1], '.pct') := pct.1,
+      !!paste0(label_levels[2], '.pct') := pct.2
     )
     
     if (input_type == 'scATAC') {
