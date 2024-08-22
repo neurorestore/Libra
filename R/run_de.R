@@ -141,9 +141,8 @@
 #' }
 #'
 #' @importFrom magrittr  %<>%
-#' @importFrom dplyr left_join
 #' @importFrom forcats fct_recode
-#' @importFrom dplyr group_by mutate select ungroup arrange
+#' @importFrom dplyr group_by mutate select ungroup arrange left_join
 #' @export
 #'
 run_de = function(input,
@@ -188,7 +187,7 @@ run_de = function(input,
       exp1 = label1_mean_expr,
       exp2 = label2_mean_expr
   )
-  out_stats %<>% left_join(mean_expr)
+  out_stats %<>% dplyr::left_join(mean_expr)
   
   # run differential expression
   DE = switch(de_family,
