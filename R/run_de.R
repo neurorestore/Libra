@@ -17,7 +17,7 @@
 #' @param cell_type_col the vector in \code{meta} containing the cell type
 #'   information. Defaults to \code{cell_type}.
 #' @param label_col the vector in \code{meta} containing the experimental
-#'   label. Defaults to \code{label}.
+#'   label. Defaults to \code{label}. Labels 1 and 2 are determined using the factor levels. If no factor levels are provided in the labels of the metadata label column, factors will be run as default on the label column.
 #' @param min_cells the minimum number of cells in a cell type to retain it.
 #'   Defaults to \code{3}.
 #' @param min_reps the minimum number of replicates in a cell type to retain it.
@@ -131,7 +131,11 @@
 #' \item{"avg_logFC"}: The average log fold change between conditions. The
 #' direction of the logFC can be controlled using factor levels of \code{label_col}
 #' whereby a positive logFC reflects higher expression in the first level of
-#' the factor, compared to the second.
+#' the factor, compared to the second. This is calculated using \code{Seurat::FoldChange}.
+#' \item{"label1.pct"}: Percentage of cells expressing the gene in label 1.
+#' \item{"label2.pct"}: Percentage of cells expressing the gene in label 2.
+#' \item{"label1.exp"}: Mean expression of the gene in label 1.
+#' \item{"label2.exp"}: Mean expression of the gene in label 2.
 #' \item{"p_val"}: The p-value resulting from the null hypothesis test.
 #' \item{"p_val_adj"}: The adjusted p-value according to the Benjamini
 #' Hochberg method (FDR).
