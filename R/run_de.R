@@ -177,21 +177,29 @@ run_de = function(input,
   input = inputs$expr
   meta = inputs$meta
   label_levels = levels(meta$label)
-  label1_barcodes = meta %>% filter(label == label_levels[1]) %>% rownames(.)
-  label2_barcodes = meta %>% filter(label == label_levels[2]) %>% rownames(.)
-  label1_mean_expr = rowMeans(input[,label1_barcodes])
-  label2_mean_expr = rowMeans(input[,label2_barcodes])
+  cell_type_levels = levels(meta$cell_type)
   sc = CreateSeuratObject(input, meta.data=meta) %>% NormalizeData(verbose = F)
-  out_stats = Seurat::FoldChange(sc, label1_barcodes, label2_barcodes, base=exp(1)) %>%
-      mutate(gene = rownames(.)) %>%
-      set_rownames(NULL) %>%
-      dplyr::select(gene, avg_logFC, pct.1, pct.2)
-  mean_expr = data.frame(
-      gene = names(label1_mean_expr),
-      exp1 = label1_mean_expr,
-      exp2 = label2_mean_expr
-  )
-  out_stats %<>% dplyr::left_join(mean_expr, by='gene')
+  out_stats = data.frame()
+  for (ct in cell_type_levels) {
+      label1_barcodes = meta %>% filter(cell_type == ct, label == label_levels[1]) %>% rownames(.)
+      label2_barcodes = meta %>% filter(cell_type == ct, label == label_levels[2]) %>% rownames(.)
+      label1_mean_expr = rowMeans(input[,label1_barcodes])
+      label2_mean_expr = rowMeans(input[,label2_barcodes])
+      tmp_stats = Seurat::FoldChange(sc, label1_barcodes, label2_barcodes, base=exp(1)) %>%
+          mutate(gene = rownames(.)) %>%
+          set_rownames(NULL) %>%
+          dplyr::select(gene, avg_logFC, pct.1, pct.2)
+      mean_expr = data.frame(
+          gene = names(label1_mean_expr),
+          exp1 = label1_mean_expr,
+          exp2 = label2_mean_expr
+      )
+      out_stats %<>% rbind(tmp_stats %>% 
+          dplyr::left_join(mean_expr, by='gene') %>%
+          mutate(cell_type = ct) %>%
+          dplyr::relocate(cell_type, .before=gene)
+      )
+  }
   
   # run differential expression
   DE = switch(de_family,
@@ -267,7 +275,7 @@ run_de = function(input,
     # make sure gene is a character not a factor
     mutate(gene = as.character(gene)) %>%
     dplyr::select(-avg_logFC) %>%
-    dplyr::left_join(out_stats, by = 'gene') %>%
+    dplyr::left_join(out_stats, by = c('gene', 'cell_type')) %>%
     dplyr::select(cell_type,
                   gene,
                   avg_logFC,
