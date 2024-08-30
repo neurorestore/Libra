@@ -274,7 +274,7 @@ run_de = function(input,
     mutate(p_val_adj = p.adjust(p_val, method = 'BH')) %>%
     # make sure gene is a character not a factor
     mutate(gene = as.character(gene)) %>%
-    dplyr::select(-avg_logFC) %>%
+    dplyr::select(cell_type, gene, p_val, p_val_adj, de_family, de_method, de_type) %>%
     dplyr::left_join(out_stats, by = c('gene', 'cell_type')) %>%
     dplyr::select(cell_type,
                   gene,
