@@ -12,7 +12,7 @@ run_de(
   label_col = "label",
   min_cells = 3,
   min_reps = 2,
-  min_features = 0,
+  min_features = 1,
   de_family = "pseudobulk",
   de_method = "edgeR",
   de_type = "LRT",
@@ -20,6 +20,7 @@ run_de(
   normalization = "log_tp10k",
   binarization = FALSE,
   latent_vars = NULL,
+  logFC_cal = "pseudobulk",
   n_threads = 2
 )
 }
@@ -146,6 +147,8 @@ option will default to \code{wilcox} for \code{singlecell} methods, to
 
 \item{latent_vars}{latent variables for single-cell Seurat/Signac based methods.}
 
+\item{logFC_cal}{logFC calculation method. Defaults to pseudobulk calculation if pseudobulk methods are used. Else use \code{Seurat::FoldChange}.}
+
 \item{n_threads}{number of threads to use for parallelization in mixed models.}
 
 \item{de_test}{the specific mixed model test to use. Please see the
@@ -164,7 +167,7 @@ will run DE on all cell types present in the original meta data.
 \item{"avg_logFC"}: The average log fold change between conditions. The
 direction of the logFC can be controlled using factor levels of \code{label_col}
 whereby a positive logFC reflects higher expression in the first level of
-the factor, compared to the second. This is calculated using \code{Seurat::FoldChange}.
+the factor, compared to the second.
 \item{"label1.pct"}: Percentage of cells expressing the gene in label 1.
 \item{"label2.pct"}: Percentage of cells expressing the gene in label 2.
 \item{"label1.exp"}: Mean expression of the gene in label 1.

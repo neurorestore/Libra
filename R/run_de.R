@@ -120,6 +120,7 @@
 #' }
 #' @param binarization binarization for single-cell ATAC-seq only
 #' @param latent_vars latent variables for single-cell Seurat/Signac based methods. 
+#' @param logFC_cal logFC calculation method. Defaults to pseudobulk calculation if pseudobulk methods are used. Else use \code{Seurat::FoldChange}.
 #' @param n_threads number of threads to use for parallelization in mixed models.
 #'
 #' @return a data frame containing differential expression results with the
@@ -131,7 +132,7 @@
 #' \item{"avg_logFC"}: The average log fold change between conditions. The
 #' direction of the logFC can be controlled using factor levels of \code{label_col}
 #' whereby a positive logFC reflects higher expression in the first level of
-#' the factor, compared to the second. This is calculated using \code{Seurat::FoldChange}.
+#' the factor, compared to the second.
 #' \item{"label1.pct"}: Percentage of cells expressing the gene in label 1.
 #' \item{"label2.pct"}: Percentage of cells expressing the gene in label 2.
 #' \item{"label1.exp"}: Mean expression of the gene in label 1.
@@ -164,6 +165,7 @@ run_de = function(input,
                   normalization = 'log_tp10k',
                   binarization = FALSE,
                   latent_vars = NULL,
+                  logFC_cal = 'pseudobulk',
                   n_threads = 2) {
   
   # first, make sure inputs are correct
@@ -174,6 +176,9 @@ run_de = function(input,
     cell_type_col = cell_type_col,
     label_col = label_col
     )
+  if (!logFC_cal %in% c('pseudobulk', 'singlecell')) {
+      stop('logFC calculations has to be either pseudobulk or single-cell')
+  }
   input = inputs$expr
   meta = inputs$meta
   label_levels = levels(meta$label)
@@ -267,15 +272,26 @@ run_de = function(input,
     )
     ) %>%
     as.character()
-
-  DE %<>%
-    # calculate adjusted p values
-    group_by(cell_type) %>%
-    mutate(p_val_adj = p.adjust(p_val, method = 'BH')) %>%
-    # make sure gene is a character not a factor
-    mutate(gene = as.character(gene)) %>%
-    dplyr::select(cell_type, gene, p_val, p_val_adj, de_family, de_method, de_type) %>%
-    dplyr::left_join(out_stats, by = c('gene', 'cell_type')) %>%
+  if (logFC_cal == 'singlecell' | de_family != 'pseudobulk') {
+      DE %<>%
+          # calculate adjusted p values
+          group_by(cell_type) %>%
+          mutate(p_val_adj = p.adjust(p_val, method = 'BH')) %>%
+          # make sure gene is a character not a factor
+          mutate(gene = as.character(gene)) %>%
+          dplyr::select(cell_type, gene, p_val, p_val_adj, de_family, de_method, de_type) %>%
+          dplyr::left_join(out_stats, by = c('gene', 'cell_type'))
+  } else {
+      DE %<>%
+          # calculate adjusted p values
+          group_by(cell_type) %>%
+          mutate(p_val_adj = p.adjust(p_val, method = 'BH')) %>%
+          # make sure gene is a character not a factor
+          mutate(gene = as.character(gene)) %>%
+          dplyr::select(cell_type, gene, p_val, p_val_adj, de_family, de_method, de_type, avg_logFC) %>%
+          dplyr::left_join(out_stats %>% dplyr::select(-avg_logFC), by = c('gene', 'cell_type'))
+  }
+  DE %<>% 
     dplyr::select(cell_type,
                   gene,
                   avg_logFC,
