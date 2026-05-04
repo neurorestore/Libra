@@ -94,7 +94,13 @@ singlecell_de = function(
     Idents(sc) = sc$cell_type
     
     # check if integer or already normalized, normalize if needed
-    mat = GetAssayData(sc, slot = 'counts')
+    if (startsWith(as.character(Version(sc)), '5')) {
+      mat = sc@assays$RNA@layers$counts
+      colnames(mat) = rownames(sc@assays$RNA@cells)
+      rownames(mat) = rownames(sc@assays$RNA@features)
+    } else {
+      mat = Seurat::GetAssayData(sc, slot='counts')
+    }
     if ((sum(mat %% 1 == 0) == length(mat)) == T) {
         if (normalization == 'log_tp10k'){
             sc %<>% NormalizeData()
@@ -129,7 +135,13 @@ singlecell_de = function(
     }
     
     if (binarization) {
-        mat = GetAssayData(sc, slot='counts')
+        if (startsWith(as.character(Version(sc)), '5')) {
+            mat = sc@assays$RNA@layers$counts
+            colnames(mat) = rownames(sc@assays$RNA@cells)
+            rownames(mat) = rownames(sc@assays$RNA@features)
+        } else {
+            mat = Seurat::GetAssayData(sc, slot='counts')
+        }
         mat@x[mat@x > 0] = 1
         sc[['RNA']]@data = mat
     }

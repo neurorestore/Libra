@@ -43,8 +43,14 @@ check_inputs = function(input,
     } else {
       labels = as.character(meta[[label_col]])
     }
-    cell_types = as.character(meta[[cell_type_col]])
-    expr = Seurat::GetAssayData(input, slot = 'counts')
+    cell_types = as.character(meta[[cell_type_col]])   
+    if (startsWith(as.character(Version(input)), '5')) {
+      expr = input@assays$RNA@layers$counts
+      colnames(expr) = rownames(input@assays$RNA@cells)
+      rownames(expr) = rownames(input@assays$RNA@features)
+    } else {
+      expr = Seurat::GetAssayData(input, slot='counts')
+    }
   } else if ("cell_data_set" %in% class(input)) {
     # confirm monocle3 is installed
     if (!requireNamespace("monocle3", quietly = TRUE)) {

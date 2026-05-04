@@ -216,7 +216,13 @@ mixedmodel_de = function(
         meta = meta0 %>% set_rownames(.$cell_barcode)) %>%
         NormalizeData()
       Idents(sc0) = sc0$label
-      mat = GetAssayData(sc0, slot = 'data')
+      if (startsWith(as.character(Version(sc0)), '5')) {
+            mat = sc0@assays$RNA@layers$data
+            colnames(mat) = rownames(sc0@assays$RNA@cells)
+            rownames(mat) = rownames(sc0@assays$RNA@features)
+        } else {
+            mat = Seurat::GetAssayData(sc0, slot='data')
+        }
       levels = levels(meta0$label)
       if (is.null(levels)) {
         levels = unique(meta0$label)
